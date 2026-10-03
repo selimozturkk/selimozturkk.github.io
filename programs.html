@@ -112,29 +112,46 @@
 
 <script>
   // ============================================================
-  //  YENİ APK EKLEMEK İÇİN: aşağıya bir satır ekle.
-  //  ad    = ekranda görünecek isim
-  //  boyut = ekranda görünecek boyut (yazı olarak)
-  //  link  = indirme linki (GitHub Release linki vb.)
+  //  Bu sayfa APK'ları GitHub Release'lerinden OTOMATİK çeker.
+  //  Yeni APK eklemek için sadece Release'e yükle, kod değiştirme.
+  //  Repo adın farklıysa sadece aşağıdaki iki satırı düzelt.
   // ============================================================
-  const APKS = [
-    // { ad: 'ornek.apk', boyut: '95 MB', link: 'https://github.com/KULLANICI/apklar/releases/download/v1/ornek.apk' },
-  ];
+  const KULLANICI = 'selimozturkk';
+  const REPO      = 'selimozturkk.github.io';
   // ============================================================
 
-  const list = document.getElementById('list');
-  const q = document.getElementById('q');
-  document.getElementById('count').textContent = APKS.length + ' APK dosyası';
+  const list  = document.getElementById('list');
+  const q     = document.getElementById('q');
+  const count = document.getElementById('count');
 
-  if (APKS.length === 0) {
-    list.innerHTML = '<div class="empty">Henüz APK eklenmemiş.</div>';
-  } else {
+  function fmtSize(b) {
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return Math.round(b / 1024) + ' KB';
+    return b + ' B';
+  }
+  function fmtDate(s) {
+    const d = new Date(s);
+    return String(d.getDate()).padStart(2, '0') + '.' +
+           String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  }
+  function message(text) {
+    list.innerHTML = '';
+    const m = document.createElement('div');
+    m.className = 'empty';
+    m.textContent = text;
+    list.appendChild(m);
+  }
+
+  function render(apks) {
+    count.textContent = apks.length + ' APK dosyası';
+    if (apks.length === 0) { message('Henüz APK eklenmemiş.'); return; }
     q.hidden = false;
-    APKS.forEach((a, i) => {
+    list.innerHTML = '';
+    apks.forEach((a, i) => {
       const item = document.createElement('div');
       item.className = 'item';
       item.style.animationDelay = (0.25 + i * 0.08) + 's';
-      item.dataset.name = a.ad.toLowerCase();
+      item.dataset.name = a.name.toLowerCase();
 
       const badge = document.createElement('div');
       badge.className = 'badge';
@@ -144,29 +161,78 @@
       info.className = 'info';
       const name = document.createElement('div');
       name.className = 'name';
-      name.textContent = a.ad;
+      name.textContent = a.name;
       const meta = document.createElement('div');
       meta.className = 'meta';
-      meta.textContent = a.boyut || '';
+      meta.textContent = fmtSize(a.size) + ' \u2022 ' + fmtDate(a.date);
       info.append(name, meta);
 
       const btn = document.createElement('a');
       btn.className = 'btn';
-      btn.href = a.link;
-      btn.textContent = 'İndir';
+      btn.href = a.url;
       btn.rel = 'noopener';
+      btn.textContent = '\u0130ndir';
 
       item.append(badge, info, btn);
       list.appendChild(item);
     });
-
-    q.addEventListener('input', () => {
-      const v = q.value.toLowerCase();
-      list.querySelectorAll('.item').forEach(el => {
-        el.style.display = el.dataset.name.includes(v) ? '' : 'none';
-      });
-    });
   }
+
+  q.addEventListener('input', () => {
+    const v = q.value.toLowerCase();
+    list.querySelectorAll('.item').forEach(el => {
+      el.style.display = el.dataset.name.includes(v) ? '' : 'none';
+    });
+  });
+
+  // GitHub'ın istek sınırına takılmamak için sonucu 5 dakika saklıyoruz
+  const CACHE_KEY = 'apk-cache-v1';
+  const CACHE_MS  = 5 * 60 * 1000;
+
+  function readCache() {
+    try {
+      const c = JSON.parse(localStorage.getItem(CACHE_KEY));
+      if (c && Date.now() - c.t < CACHE_MS) return c.data;
+    } catch (e) {}
+    return null;
+  }
+  function writeCache(data) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), data })); } catch (e) {}
+  }
+
+  async function load() {
+    const cached = readCache();
+    if (cached) { render(cached); return; }
+
+    message('Yükleniyor...');
+    try {
+      const r = await fetch('https://api.github.com/repos/' + KULLANICI + '/' + REPO + '/releases?per_page=100');
+      if (!r.ok) throw new Error(r.status);
+      const releases = await r.json();
+
+      const apks = [];
+      releases.forEach(rel => {
+        if (rel.draft) return;
+        (rel.assets || []).forEach(as => {
+          if (as.name.toLowerCase().endsWith('.apk')) {
+            apks.push({
+              name: as.name,
+              size: as.size,
+              date: as.updated_at || rel.published_at,
+              url:  as.browser_download_url
+            });
+          }
+        });
+      });
+      apks.sort((a, b) => new Date(b.date) - new Date(a.date));
+      writeCache(apks);
+      render(apks);
+    } catch (e) {
+      count.textContent = '';
+      message('Liste şu an yüklenemedi, biraz sonra tekrar dene.');
+    }
+  }
+  load();
 </script>
 </body>
 </html>
