@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TV, Android Programlarını İndir</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height:100%; margin:0; }
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color:#fff; text-align:center;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    background: #0b0d14 url("arkaplan.png") center/cover no-repeat fixed;
+    overflow:hidden; position:relative;
+  }
+  body::before {
+    content:""; position:fixed; inset:0;
+    background: radial-gradient(circle at 50% 40%, rgba(10,12,25,.45), rgba(5,6,14,.85));
+    z-index:0;
+  }
+  body::after {
+    content:""; position:fixed; width:60vmax; height:60vmax; left:-20vmax; top:-20vmax;
+    background: radial-gradient(circle, rgba(77,148,255,.25), transparent 60%);
+    animation: drift 14s ease-in-out infinite alternate; z-index:0; pointer-events:none;
+  }
+  @keyframes drift { to { transform: translate(60vw, 40vh); } }
+
+  .card {
+    position:relative; z-index:1; max-width:560px; width:100%;
+    padding:48px 32px;
+    background: rgba(20,24,38,.45);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:24px;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    animation: rise .9s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise { from { opacity:0; transform: translateY(40px) scale(.96); } }
+
+  h1 {
+    font-size:clamp(1.7rem, 5vw, 2.4rem); margin:0 0 12px; line-height:1.2;
+    background: linear-gradient(90deg, #fff, #8ec1ff, #fff);
+    background-size:200% auto; -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation: shine 5s linear infinite;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+
+  p { color:rgba(255,255,255,.75); margin:0 0 30px; animation: rise 1.1s .2s both; }
+
+  .btn {
+    display:inline-block; position:relative; overflow:hidden;
+    color:#fff; text-decoration:none; font-weight:700; font-size:1.1rem;
+    padding:15px 36px; border-radius:14px;
+    background: linear-gradient(135deg, #2f80ed, #6a5cff);
+    box-shadow: 0 8px 24px rgba(79,110,255,.5);
+    transition: transform .2s, box-shadow .2s;
+    animation: rise 1.1s .4s both, pulse 2.4s 1.6s infinite;
+  }
+  .btn::after {
+    content:""; position:absolute; top:0; left:-120%; width:60%; height:100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,.45), transparent);
+    transform: skewX(-20deg); transition: left .6s;
+  }
+  .btn:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 12px 32px rgba(79,110,255,.7); }
+  .btn:hover::after { left:140%; }
+  .btn:active { transform: scale(.97); }
+  @keyframes pulse { 50% { box-shadow: 0 8px 36px rgba(106,92,255,.85); } }
+
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>TV, Android Programlarını İndir</h1>
+    <p>Ücretsiz APK dosyaları, tek tıkla indir.</p>
+    <a class="btn" href="programs.html">Programlara Git</a>
+  </div>
+</body>
+</html>
